@@ -1,0 +1,98 @@
+<%- include('layouts/header') -%>
+
+<div class="container mx-auto p-4 md:p-8">
+  <div
+    class="flex flex-col items-center justify-center min-h-64 bg-base-200 rounded-box shadow-xl p-6 md:p-10 mb-10"
+  >
+    <h1 class="text-4xl md:text-5xl font-extrabold text-center mb-4">
+      Temukan Resep Lezatmu!
+    </h1>
+    <p class="text-lg text-center mb-8 max-w-2xl">
+      Jelajahi ribuan resep dari seluruh dunia. Masak dengan mudah, nikmati
+      kelezatan.
+    </p>
+
+    <div class="flex flex-wrap justify-center gap-4">
+      <button class="btn btn-md btn-info" onclick="category_modal.showModal()">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-5 w-5 mr-2"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M4 6h16M4 12h16M4 18h7"
+          />
+        </svg>
+        Pilih Kategori
+      </button>
+    </div>
+  </div>
+
+  <h2 class="text-3xl md:text-4xl font-bold text-center mb-8">
+    <% if (selectedCategory) { %> Resep Kategori: <%= selectedCategory %> <% } else { %> Resep Pilihan untukmu <% } %>
+  </h2>
+
+  <div
+    id="meal-cards-container"
+    class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+  >
+    <% if (meals && meals.length > 0) { %> <% meals.forEach(meal => { %>
+    <a
+      href="/meal/<%= meal.idMeal %>"
+      class="card bg-base-100 shadow-xl overflow-hidden cursor-pointer hover:shadow-2xl transition-shadow duration-300"
+    >
+      <figure class="w-full h-48 sm:h-40 md:h-36 overflow-hidden">
+        <img
+          src="<%= meal.strMealThumb %>"
+          alt="<%= meal.strMeal %>"
+          class="object-cover w-full h-full"
+        />
+      </figure>
+      <div class="card-body p-4">
+        <h2 class="card-title text-xl font-semibold mb-2 line-clamp-1">
+          <%= meal.strMeal %>
+        </h2>
+        <p class="text-sm text-base-content-secondary line-clamp-2">
+          <%= meal.strInstructions ? meal.strInstructions.substring(0, 100) +
+          '...' : (meal.strArea ? meal.strArea : '') %>
+        </p>
+      </div>
+    </a>
+    <% }); %> <% } else { %>
+    <div
+      class="col-span-full text-center p-10 bg-base-100 rounded-box shadow-lg"
+    >
+      <p class="text-xl text-warning">Maaf, tidak ada resep yang ditemukan.</p>
+      <p class="text-base-content-secondary mt-2">
+        Coba cari dengan kata kunci lain atau pilih kategori yang berbeda.
+      </p>
+      <a href="/" class="btn btn-primary mt-6">Kembali ke Semua Resep</a>
+    </div>
+    <% } %>
+  </div>
+</div>
+
+<!-- Category Modal -->
+<dialog id="category_modal" class="modal">
+  <div class="modal-box">
+    <h3 class="font-bold text-lg">Pilih Kategori</h3>
+    <div class="py-4">
+      <a href="/?category=" class="btn btn-block mb-2">Semua Kategori</a>
+      <% categories.forEach(category => { %>
+        <a href="/?category=<%= encodeURIComponent(category.strCategory) %>" class="btn btn-block mb-2"><%= category.strCategory %></a>
+      <% }); %>
+    </div>
+    <div class="modal-action">
+      <form method="dialog">
+        <button class="btn">Tutup</button>
+      </form>
+    </div>
+  </div>
+</dialog>
+
+<%- include('layouts/footer') -%>
