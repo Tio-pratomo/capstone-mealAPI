@@ -1,34 +1,37 @@
-// controllers/mealController.js
-import * as mealModel from '../models/mealModel.js'; // Impor semua fungsi dari mealModel
-import { logger } from '../config/logger.js'; // Impor logger
+/**
+ * @fileoverview Modul ini berisi fungsi-fungsi controller untuk menangani permintaan terkait resep makanan.
+ * Ini berinteraksi dengan model untuk mengambil data dan merender tampilan yang sesuai.
+ */
+
+import * as mealModel from '../models/mealModel.js';
+import { logger } from '../config/logger.js';
 
 /**
- * Menampilkan halaman utama dengan resep.
+ * Menampilkan halaman utama aplikasi.
  * Secara default akan menampilkan beberapa resep acak.
- * Dapat juga menangani pencarian jika ada query 'q' di URL.
- * Mengirimkan data kategori untuk dropdown filter.
+ * Dapat juga menangani filter berdasarkan kategori jika ada query 'category' di URL.
+ *
+ * @param {object} req - Objek permintaan Express.
+ * @param {object} res - Objek respons Express.
+ * @param {function} next - Fungsi middleware berikutnya.
+ * @returns {Promise<void>} Merender halaman 'home' dengan data resep dan kategori.
  */
 export async function getHomePage(req, res, next) {
   try {
     let meals = [];
-    const categoryFilter = req.query.category; // Dapatkan filter kategori dari URL (contoh: /?category=Dessert)
+    const categoryFilter = req.query.category;
 
-    // Dapatkan semua kategori untuk dropdown
     const categories = await mealModel.getAllCategories();
 
     if (categoryFilter) {
-      // Jika ada filter kategori, filter resep berdasarkan kategori
       logger.info(
         `Controller: Filtering meals by category "${categoryFilter}"`,
       );
       meals = await mealModel.filterMealsByCategory(categoryFilter);
     } else {
-      // Jika tidak ada pencarian atau filter, tampilkan beberapa resep acak
       logger.info('Controller: Fetching random meals for homepage.');
       const randomMeals = [];
-      // Ambil beberapa resep acak. API hanya menyediakan satu per request, jadi lakukan loop.
       for (let i = 0; i < 8; i++) {
-        // Ambil 8 resep acak
         const meal = await mealModel.getRandomMeal();
         if (meal) {
           randomMeals.push(meal);
@@ -39,49 +42,53 @@ export async function getHomePage(req, res, next) {
 
     res.render('home', {
       title: 'Culinary Delights - Resep Lezat',
-      meals: meals, // Data resep yang akan ditampilkan di view
-      categories: categories, // Data kategori untuk dropdown
-      selectedCategory: categoryFilter || '', // Kirim kembali kategori yang dipilih ke view
+      meals: meals,
+      categories: categories,
+      selectedCategory: categoryFilter || '',
     });
   } catch (error) {
     logger.error(`Controller Error in getHomePage: ${error.message}`, {
       stack: error.stack,
     });
-    next(error); // Teruskan error ke error handling middleware Express
+    next(error);
   }
 }
 
 /**
- * Menampilkan halaman detail resep.
+ * Menampilkan halaman detail untuk resep tertentu.
  * Mengambil ID resep dari parameter URL.
+ *
+ * @param {object} req - Objek permintaan Express.
+ * @param {object} res - Objek respons Express.
+ * @param {function} next - Fungsi middleware berikutnya.
+ * @returns {Promise<void>} Merender halaman 'meal-detail' dengan data resep yang ditemukan, atau halaman 404 jika tidak ditemukan.
+ * @throws {Error} Jika resep tidak ditemukan, akan melempar error dengan statusCode 404.
  */
 export async function getMealDetailsPage(req, res, next) {
   try {
-    const mealId = req.params.id; // Dapatkan ID resep dari URL (contoh: /meal/52772)
+    const mealId = req.params.id;
     logger.info(`Controller: Fetching details for meal ID: ${mealId}`);
     const meal = await mealModel.getMealDetailsById(mealId);
 
     if (!meal) {
       logger.warn(`Controller: Meal with ID ${mealId} not found.`);
-      // Jika resep tidak ditemukan, lempar error 404 atau render halaman 404
       const error = new Error('Resep tidak ditemukan');
       error.statusCode = 404;
-      throw error; // Akan ditangkap oleh global error handler
+      throw error;
     }
 
     res.render('meal-detail', {
-      title: meal.strMeal, // Judul halaman dari nama resep
-      meal: meal, // Data resep detail
+      title: meal.strMeal,
+      meal: meal,
     });
   } catch (error) {
     logger.error(
       `Controller Error in getMealDetailsPage (${req.params.id}): ${error.message}`,
       { stack: error.stack },
     );
-    // Jika error adalah 404, kita bisa render halaman 404 secara spesifik
     if (error.statusCode === 404) {
       return res.status(404).render('404', { title: 'Resep Tidak Ditemukan' });
     }
-    next(error); // Teruskan error lain ke error handling middleware Express
+    next(error);
   }
 }

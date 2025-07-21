@@ -1,3 +1,9 @@
+/**
+ * @fileoverview Modul ini bertanggung jawab untuk berinteraksi dengan TheMealDB API
+ * untuk mengambil data resep. Ini berisi fungsi-fungsi untuk mencari, memfilter,
+ * dan mendapatkan detail resep.
+ */
+
 import axios from 'redaxios';
 import { logger } from '../config/logger.js';
 
@@ -7,8 +13,9 @@ const mealAPI = axios.create({
 
 /**
  * Mengambil resep berdasarkan nama pencarian.
- * @param {string} query Nama resep yang dicari.
- * @returns {Array} Array berisi objek resep, atau array kosong jika tidak ditemukan/error.
+ *
+ * @param {string} query - Nama resep yang dicari.
+ * @returns {Promise<Array<object>>} Array berisi objek resep, atau array kosong jika tidak ditemukan/error.
  */
 export async function searchMealsByName(query) {
   if (!query) {
@@ -29,10 +36,10 @@ export async function searchMealsByName(query) {
 
 /**
  * Mengambil detail resep berdasarkan ID.
- * @param {string} id ID resep.
- * @returns {Object|null} Objek resep atau null jika tidak ditemukan/error.
+ *
+ * @param {string} id - ID resep.
+ * @returns {Promise<object|null>} Objek resep atau null jika tidak ditemukan/error.
  */
-
 export async function getMealDetailsById(id) {
   if (!id) {
     logger.warn(`Your ID is empty or undefined or NULL`);
@@ -52,9 +59,9 @@ export async function getMealDetailsById(id) {
 
 /**
  * Mengambil daftar semua kategori makanan.
- * @returns {Array} Array berisi objek kategori, atau array kosong jika error.
+ *
+ * @returns {Promise<Array<object>>} Array berisi objek kategori, atau array kosong jika error.
  */
-
 export async function getAllCategories() {
   try {
     logger.info(`get all categories`);
@@ -69,8 +76,9 @@ export async function getAllCategories() {
 
 /**
  * Mengambil resep berdasarkan kategori.
- * @param {string} category Nama kategori.
- * @returns {Array} Array berisi objek resep singkat, atau array kosong jika tidak ditemukan/error.
+ *
+ * @param {string} category - Nama kategori.
+ * @returns {Promise<Array<object>>} Array berisi objek resep singkat, atau array kosong jika tidak ditemukan/error.
  */
 export async function filterMealsByCategory(category) {
   if (!category) {
@@ -80,7 +88,6 @@ export async function filterMealsByCategory(category) {
   try {
     logger.info(`Fetching meals by category: ${category}`);
     const response = await mealAPI.get(`/filter.php?c=${category}`);
-    // Filter API mengembalikan idMeal, strMeal, strMealThumb.
     return response.data.meals || [];
   } catch (error) {
     logger.error(
@@ -91,7 +98,11 @@ export async function filterMealsByCategory(category) {
   }
 }
 
-// Tambahkan fungsi lain sesuai kebutuhan, misalnya untuk resep acak
+/**
+ * Mengambil resep acak.
+ *
+ * @returns {Promise<object|null>} Objek resep acak atau null jika error.
+ */
 export async function getRandomMeal() {
   try {
     logger.info('Fetching random meal.');
