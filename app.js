@@ -2,8 +2,6 @@ import express from 'express';
 import { logger } from './config/logger.js';
 import morgan from 'morgan';
 import path from 'path';
-import { projectRoot } from './config/pathHelpers.js';
-
 // Impor router aplikasi kita
 import mealRoutes from './routes/mealRoutes.js'; // <--- PASTIKAN INI ADA
 
@@ -20,7 +18,7 @@ app.use(
 
 app.set('view engine', 'ejs');
 
-app.set('views', path.join(projectRoot, 'views'));
+app.set('views', path.join(process.cwd(), 'views'));
 
 app.use(express.static(path.join(projectRoot, 'public')));
 
